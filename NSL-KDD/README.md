@@ -1,6 +1,4 @@
-Sure! Here's an overview of the NSL-KDD dataset to include in your README.md file:
 
----
 
 # NSL-KDD Dataset
 
