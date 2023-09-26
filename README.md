@@ -4,7 +4,9 @@ This project implements an Intrusion Detection System (IDS) for network security
 
 ## Introduction
 
-Intrusion Detection Systems (IDS) play a crucial role in maintaining network security. This project focuses on creating an IDS using a Random Forest machine learning model. The system predicts whether incoming network traffic is normal or represents a potential anomaly. The project aims to contribute to network security by providing a tool that can efficiently identify and classify various network intrusions. The ultimate vision is to enhance cybersecurity measures, enabling quicker responses to potential threats and ensuring a safer network environment.
+Intrusion Detection Systems (IDS) play a crucial role in maintaining network security. This project focuses on creating an IDS using a Random Forest machine learning model. The system predicts whether incoming network traffic is normal or represents a potential anomaly. The project aims to contribute to network security by providing a tool that can efficiently identify and classify various network intrusions. The ultimate vision is to enhance cybersecurity measures, enabling quicker responses to potential threats and ensuring a safer network environment. <br>
+
+The [Problem Statement](ProblemStatement.md)
 
 ![detector app](resources/11.png)
 
