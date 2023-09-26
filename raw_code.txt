@@ -1,0 +1,272 @@
+import numpy as np
+import pandas as pd
+
+df = pd.read_csv('NSL-KDD/KDDTest+.txt', delimiter=',')
+
+df.sample(5)
+
+df.shape
+
+df.info()
+
+column_names = ['duration', 'protocol_type', 'service', 'flag', 'src_bytes', 'dst_bytes', 'land', 
+                'wrong_fragment', 'urgent', 'hot', 'num_failed_logins', 'logged_in', 'num_compromised', 
+                'root_shell', 'su_attempted', 'num_root', 'num_file_creations', 'num_shells', 'num_access_files', 
+                'num_outbound_cmds', 'is_host_login', 'is_guest_login', 'unknown_feature',
+                'count', 'srv_count', 'serror_rate', 'srv_serror_rate', 'rerror_rate', 'srv_rerror_rate', 
+                'same_srv_rate', 'diff_srv_rate', 'srv_diff_host_rate', 'dst_host_count', 'dst_host_srv_count', 
+                'dst_host_same_srv_rate', 'dst_host_diff_srv_rate', 'dst_host_same_src_port_rate', 
+                'dst_host_srv_diff_host_rate', 'dst_host_serror_rate', 'dst_host_srv_serror_rate', 
+                'dst_host_rerror_rate', 'neptune', 'target']
+
+df.columns = column_names
+
+df.sample(5)
+
+categorical_cols = ['protocol_type', 'service', 'flag', 'neptune']
+df = pd.get_dummies(df, columns=categorical_cols)
+
+numeric_cols = ['duration', 'src_bytes', 'dst_bytes', 'count', 'srv_count', 'serror_rate', 
+                 'srv_serror_rate', 'rerror_rate', 'srv_rerror_rate', 'same_srv_rate', 'diff_srv_rate', 
+                 'srv_diff_host_rate', 'dst_host_count', 'dst_host_srv_count', 'dst_host_same_srv_rate', 
+                 'dst_host_diff_srv_rate', 'dst_host_same_src_port_rate', 'dst_host_srv_diff_host_rate', 
+                 'dst_host_serror_rate', 'dst_host_srv_serror_rate', 'dst_host_rerror_rate']
+
+from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
+
+# Assume 21 represents normal (benign) traffic, and other values (e.g., 15, 11) represent different attacks
+
+df['target'] = df['target'].apply(lambda x: 1 if x != 21 else 0)
+# 1 for attacks, 0 for normal
+
+df.head
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+df2.describe()
+
+df2['target'].value_counts()
+
+plt.pie(df2['target'].value_counts(), labels=['attacks','normal'],autopct="%0.2f")
+plt.show()
+
+plt.figure(figsize=(18, 12))
+
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Correlation Matrix Heatmap')
+plt.show()
+
+sns.pairplot(df.sample(1000), vars=numeric_cols[:3], hue='target')
+plt.suptitle('Pairplot of Numerical Features (Sampled)')
+plt.show()
+
+# Distribution of numerical features
+
+plt.figure(figsize=(18, 12))
+for i, col in enumerate(numeric_cols[:4]):  # Displaying the first 4 numerical features
+    plt.subplot(2, 2, i+1)
+    sns.histplot(df[col], kde=True, bins=30)
+    plt.title(f'Distribution of {col}')
+plt.tight_layout()
+plt.show()
+
+# Boxplots for numerical features by target
+
+plt.figure(figsize=(18, 12))
+for i, col in enumerate(numeric_cols[:4]):
+    plt.subplot(2, 2, i+1)
+    sns.boxplot(x='target', y=col, data=df)
+    plt.title(f'Boxplot of {col} by target')
+plt.tight_layout()
+plt.show()
+
+# Count plot of categorical features
+
+plt.figure(figsize=(18, 10))
+for i, col in enumerate(categorical_cols):
+    plt.subplot(2, 2, i+1)  # Use 2 rows and 2 subplots in each row
+    sns.countplot(x=col, data=df, hue='target')
+    plt.title(f'Countplot of {col} by target')
+plt.tight_layout()
+plt.show()
+
+# Create binary features for each protocol type
+
+df2['is_protocol_tcp'] = (df2['protocol_type_tcp'] == 1).astype(int)
+df2['is_protocol_udp'] = (df2['protocol_type_udp'] == 1).astype(int)
+df2['is_protocol_icmp'] = (df2['protocol_type_icmp'] == 1).astype(int)
+
+# Create binary features for each flag
+
+df2['is_flag_SF'] = (df2['flag_SF'] == 1).astype(int)
+df2['is_flag_S0'] = (df2['flag_S0'] == 1).astype(int)
+df2['is_flag_REJ'] = (df2['flag_REJ'] == 1).astype(int)
+
+# Aggregate services into categories
+
+web_services = ['http', 'https', 'smtp', 'ftp', 'ssh', 'ssl']
+df2['service_category'] = df['service'].apply(lambda x: 'Web' if x in web_services else 'Others')
+
+df2.head
+
+from sklearn.feature_selection import RFE
+from sklearn.ensemble import RandomForestClassifier
+
+random_model = RandomForestClassifier(random_state=42)
+
+n_features_to_select = 10  # Adjust this based on your preference
+rfe = RFE(estimator=rf_model, n_features_to_select=n_features_to_select)
+fit = rfe.fit(X_train_encoded, y_train)
+
+selected_features = [X_train_encoded.columns[i] for i in range(len(rfe.support_)) if rfe.support_[i]]
+print("Selected Features:", selected_features)
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.neural_network import MLPClassifier
+
+X = df2.drop('target', axis=1)  # Features
+y = df2['target']  # Target variable
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Perform one-hot encoding on categorical features
+
+X_train_encoded = pd.get_dummies(X_train, columns=['service_category'])
+X_test_encoded = pd.get_dummies(X_test, columns=['service_category'])
+
+rf_model = RandomForestClassifier(random_state=42)
+rf_model.fit(X_train_encoded, y_train)
+
+svm_model = SVC(random_state=42)
+svm_model.fit(X_train_encoded, y_train)
+
+log_reg_model = LogisticRegression(random_state=42, max_iter=10000)  # Increase max_iter
+log_reg_model.fit(X_train_encoded, y_train)
+
+nn_model = MLPClassifier(random_state=42)
+nn_model.fit(X_train_encoded, y_train)
+
+from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, confusion_matrix
+
+rf_predictions = rf_model.predict(X_test_encoded)
+svm_predictions = svm_model.predict(X_test_encoded)
+log_reg_predictions = log_reg_model.predict(X_test_encoded)
+nn_predictions = nn_model.predict(X_test_encoded)
+
+rf_accuracy = accuracy_score(y_test, rf_predictions)
+svm_accuracy = accuracy_score(y_test, svm_predictions)
+log_reg_accuracy = accuracy_score(y_test, log_reg_predictions)
+nn_accuracy = accuracy_score(y_test, nn_predictions)
+
+print("Accuracy Scores:")
+print("Random Forest:", rf_accuracy)
+print("SVM:", svm_accuracy)
+print("Logistic Regression:", log_reg_accuracy)
+print("Neural Network:", nn_accuracy)
+print("\n")
+
+models = ['Random Forest', 'SVM', 'Logistic Regression', 'Neural Network']
+predictions = [rf_predictions, svm_predictions, log_reg_predictions, nn_predictions]
+
+for model_name, preds in zip(models, predictions):
+    precision = precision_score(y_test, preds, average='weighted')
+    recall = recall_score(y_test, preds, average='weighted')
+    confusion_mat = confusion_matrix(y_test, preds)
+    fp = confusion_mat[0, 1] / (confusion_mat[0, 0] + confusion_mat[0, 1])  # False Positive Rate
+    roc_auc = roc_auc_score(y_test, preds)
+    
+    print(f"Metrics for {model_name}:")
+    print("Precision:", precision)
+    print("Recall:", recall)
+    print("False Positive Rate:", fp)
+    print("Area under ROC curve:", roc_auc)
+    print("Confusion Matrix:")
+    print(confusion_mat)
+    print("\n")
+
+X_train_selected = X_train_encoded[selected_features]
+X_test_selected = X_test_encoded[selected_features]
+
+rf_model_selected = RandomForestClassifier(random_state=42)
+rf_model_selected.fit(X_train_selected, y_train)
+
+rf_predictions_selected = rf_model_selected.predict(X_test_selected)
+
+rf_accuracy_selected = accuracy_score(y_test, rf_predictions_selected)
+print("Accuracy Score with Selected Features:", rf_accuracy_selected)
+
+print("Classification Report:")
+print(classification_report(y_test, rf_predictions_selected), "\n")
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, rf_predictions_selected))
+
+from sklearn.model_selection import GridSearchCV
+
+rf_params = {
+    'n_estimators': [50, 100, 150],
+    'max_depth': [None, 10, 20, 30]
+}
+
+svm_params = {
+    'C': [0.1, 1, 10],
+    'kernel': ['linear', 'rbf']
+}
+
+log_reg_params = {
+    'C': [0.1, 1, 10],
+    'max_iter': [1000, 2000]
+}
+
+nn_params = {
+    'hidden_layer_sizes': [(64, 64), (128, 128)],
+    'activation': ['relu', 'tanh'],
+    'max_iter': [1000, 2000]
+}
+
+rf_grid = GridSearchCV(RandomForestClassifier(random_state=42), param_grid=rf_params, cv=3)
+svm_grid = GridSearchCV(SVC(random_state=42), param_grid=svm_params, cv=3)
+log_reg_grid = GridSearchCV(LogisticRegression(random_state=42), param_grid=log_reg_params, cv=3)
+nn_grid = GridSearchCV(MLPClassifier(random_state=42), param_grid=nn_params, cv=3)
+
+rf_grid.fit(X_train_encoded, y_train)
+svm_grid.fit(X_train_encoded, y_train)
+log_reg_grid.fit(X_train_encoded, y_train)
+nn_grid.fit(X_train_encoded, y_train)
+
+print("Random Forest - Best Parameters:", rf_grid.best_params_)
+print("SVM - Best Parameters:", svm_grid.best_params_)
+print("Logistic Regression - Best Parameters:", log_reg_grid.best_params_)
+print("Neural Network - Best Parameters:", nn_grid.best_params_)
+
+from sklearn.ensemble import VotingClassifier
+
+models = [('Random Forest', rf_model), ('SVM', svm_model), ('Logistic Regression', log_reg_model), ('Neural Network', nn_model)]
+
+voting_clf = VotingClassifier(estimators=models, voting='hard')
+
+voting_clf.fit(X_train_encoded, y_train)
+
+ensemble_predictions = voting_clf.predict(X_test_encoded)
+
+ensemble_accuracy = accuracy_score(y_test, ensemble_predictions)
+
+print("Ensemble (Voting Classifier) Accuracy:", ensemble_accuracy)
+print("Classification Report for Ensemble:")
+print(classification_report(y_test, ensemble_predictions))
+print("Confusion Matrix for Ensemble:")
+print(confusion_matrix(y_test, ensemble_predictions))
+
+
+
+
+
+
